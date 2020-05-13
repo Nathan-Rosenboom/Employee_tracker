@@ -1,7 +1,7 @@
-var mysql = require('mysql');
-var inquirer = require('inquirer');
+const mysql = require('mysql');
+const inquirer = require('inquirer');
 const cTable = require('console.table');
-var con = mysql.createConnection({
+const con = mysql.createConnection({
     host: "localhost",
     user: "root",
     password: "RufusDog2019!",
@@ -26,14 +26,17 @@ function runInquirer() {
         if (answer.choice === 'Add a role') {
             createRole();
         }
-        if (answer.choice === 'view all employees') {
+        if (answer.choice === 'View all employees') {
             viewEmployees();
         }
-        if (answer.choice === 'view all departments') {
+        if (answer.choice === 'View all departments') {
             viewDepartments();
         }
-        if (answer.choice === 'view all roles') {
+        if (answer.choice === 'View all roles') {
             viewRoles();
+        }
+        if (answer.choice === 'Update current employees role') {
+            updateRole();
         }
     });
 }
@@ -43,8 +46,10 @@ con.connect(function (err) {
         console.log(err);
         return;
     }
-
-    console.log("Success!");
+    console.log(" ┌───────────────────────────────────────────────────────────────────────────┐");
+    console.log(" │                         EMPLOYEE MANAGEMENT SYSTEM                        │");
+    console.log(" └───────────────────────────────────────────────────────────────────────────┘");
+    console.log("Database connected successfuly!");
     runInquirer();
 });
 
