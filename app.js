@@ -3,6 +3,7 @@ const inquirer = require('inquirer');
 const cTable = require('console.table');
 const con = mysql.createConnection({
     host: "localhost",
+    port: 3306,
     user: "root",
     password: "RufusDog2019!",
     database: "employee_tracker_db"
@@ -35,20 +36,23 @@ function runInquirer() {
         if (answer.choice === 'View all roles') {
             viewRoles();
         }
-        if (answer.choice === 'Update current employees role') {
+        if (answer.choice === 'Update current employee roles') {
             updateRole();
+        }
+        else {
+            con.end();
         }
     });
 }
 con.connect(function (err) {
+    console.log(" ┌───────────────────────────────────────────────────────────────────────────┐");
+    console.log(" │                             EMPLOYEE TRACKER                              │");
+    console.log(" └───────────────────────────────────────────────────────────────────────────┘");
     if (err) {
         console.error("Something went wrong");
         console.log(err);
         return;
     }
-    console.log(" ┌───────────────────────────────────────────────────────────────────────────┐");
-    console.log(" │                         EMPLOYEE MANAGEMENT SYSTEM                        │");
-    console.log(" └───────────────────────────────────────────────────────────────────────────┘");
     console.log("Database connected successfuly!");
     runInquirer();
 });
@@ -110,7 +114,7 @@ function createRole() {
             message: "What is the salary for this role?",
         }
     ]).then(res => {
-        con.query(`INSERT INTO role (title, salary) VALUES ("${res.roleTitle}", "${res.roleSalary}")`, function (err, results) {
+        con.query(`INSERT INTO role (title, salary) VALUES ("${res.roleTitle}", ${res.roleSalary})`, function (err, results) {
             console.log("Role added successfully!");
             console.log(results);
             runInquirer();
@@ -130,7 +134,7 @@ function viewEmployees() {
 
 function viewDepartments() {
     con.query('SELECT * FROM department', function (err, results, fields) {
-        console.log(results)
+        if (err) throw err;
         const departmentTable = cTable.getTable(results);
         console.log(departmentTable);
         runInquirer();
@@ -139,23 +143,46 @@ function viewDepartments() {
 
 function viewRoles() {
     con.query('SELECT * FROM role', function (err, results, fields) {
-        const roleTable = cTable.getTable([
-            { results }
-        ]);
+        let roleArray = [];
+        for (let i = 0; i < results.length; i++) {
+            roleArray.push(results[i].id);
+            roleArray.push(results[i].title);
+            roleArray.push(results[i].salary);
+        }
+        console.log(roleArray);
+        let roleTable = cTable.getTable([roleArray]);
+        //console.table(['id', 'title', 'salary', roleArray]);
         console.log(roleTable);
+
+        //    con.query('SELECT * FROM role', function (err, results, fields) {
+        //        let roleObj = results;
+        //        let roleArray = Object.values(roleObj);
+        //        const roleTable = cTable.getTable([
+        //           roleArray
+        //        ]);
+        //        console.log(roleTable);
         runInquirer();
     });
+
+
 }
 
 function updateRole() {
     con.query('SELECT * FROM employee', function (err, results, fields) {
         inquirer.prompt([
             {
-                type: "list",
-                name: "first_name",
-                message: "Select the employee you would like to alter:",
-                choices: results.map(res => res.first_Name),
-                askAnswered: true
+                name: "choice",
+                type: "rawlist",
+                choices: function () {
+                    let employeeArray = [];
+                    for (let i = 0; i < results.length; i++) {
+                        let employeeFull = results[i].first_name + " " + results[i].last_name;
+                        employeeArray.push(employeeFull);
+                        
+                    }
+                    return employeeArray;
+                },
+                message: "Which employee would you like to update?"
             },
             {
                 type: "input",
@@ -163,7 +190,7 @@ function updateRole() {
                 message: "Please enter the employees new role:",
             }
         ]).then(res => {
-            const chosenItem = results.find(row.first_name === response.first_name);
+            let chosenItem = results.find(row.first_name === response.first_name);
             if (response.newRole != chosenItem.role_id) {
                 con.query(`UPDATE employee SET role_id = ${res.newRole} WHERE first_name = ${chosenItem.id}`, function (err, results) {
                     console.log("Role updated successfully!");
