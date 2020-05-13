@@ -5,7 +5,7 @@ const con = mysql.createConnection({
     host: "localhost",
     port: 3306,
     user: "root",
-    password: "RufusDog2019!",
+    password: "",
     database: "employee_tracker_db"
 });
 function runInquirer() {
@@ -151,16 +151,7 @@ function viewRoles() {
         }
         console.log(roleArray);
         let roleTable = cTable.getTable([roleArray]);
-        //console.table(['id', 'title', 'salary', roleArray]);
         console.log(roleTable);
-
-        //    con.query('SELECT * FROM role', function (err, results, fields) {
-        //        let roleObj = results;
-        //        let roleArray = Object.values(roleObj);
-        //        const roleTable = cTable.getTable([
-        //           roleArray
-        //        ]);
-        //        console.log(roleTable);
         runInquirer();
     });
 
